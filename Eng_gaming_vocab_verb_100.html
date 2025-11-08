@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kru Pai Classroom — Verb Quest (Dark Stage + Pink Orbs)</title>
+<style>
+  :root{
+    /* โทนมืดอ่านชัด + ลูกแก้วชมพูเด่น */
+    --brand:#fde047;               /* เหลืองพาสเทลสำหรับไฮไลต์ */
+    --ink:#e5e7eb;                 /* ตัวอักษรหลัก เทาอ่อน */
+    --space:#0f1115;               /* พื้นหลังเข้ม */
+    --bg1:#0b0d12; --bg2:#0b0d12;  /* ลบพาสเทลเดิม */
+    --barfg:linear-gradient(90deg,#fbbf24,#fb7185); /* สีแถบเวลา ตัดกับพื้นเข้ม */
+    /* ลูกแก้วชมพู (บังคับทุกธีมให้เด่น) */
+    --tokenA:#ff5fa3; 
+    --tokenB:#ff98c6;
+    --ok:#34d399; --no:#fb7185;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:"Prompt",system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans Thai",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 800px at 50% -15%, rgba(255,255,255,0.06), transparent),
+      radial-gradient(1200px 900px at 50% 120%, rgba(255,255,255,0.05), transparent),
+      linear-gradient(180deg, #0b0d12, var(--space));
+    min-height:100vh; overflow:hidden;
+  }
+
+  .container{ width:min(1000px,95vw); margin:0 auto; padding:16px 0 38px }
+  .topbrand{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px }
+  .logo{ display:flex; align-items:center; gap:10px; font-weight:900; font-size: clamp(22px,3.6vw,34px); color:#fafafa; }
+  .logo-badge{
+    width:40px; height:40px; border-radius:50%; display:grid; place-items:center;
+    background:linear-gradient(180deg,#fde047,#f59e0b); color:#1f1300; font-weight:900;
+    box-shadow:0 6px 16px rgba(0,0,0,.4);
+  }
+  .badge{
+    border:1.5px solid rgba(255,255,255,.1); border-radius:999px; padding:8px 12px; font-weight:800;
+    background:rgba(255,255,255,.06); color:#f3f4f6; box-shadow:0 6px 16px rgba(0,0,0,.35)
+  }
+
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+    border:1.5px solid rgba(255,255,255,.08);
+    border-radius:22px; box-shadow:0 14px 38px rgba(0,0,0,.5);
+    padding: clamp(14px,2vw,22px);
+  }
+
+  h1{
+    margin:0 0 6px 0; font-size: clamp(26px,4.3vw,44px); font-weight:900;
+    color:#fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.65);
+  }
+  .subtitle{ color:#cbd5e1 }
+
+  .row{display:flex; flex-wrap:wrap; gap:12px}
+  .col{flex:1 1 260px}
+  label{ color:#e5e7eb; font-weight:700 }
+  input, select{
+    width:100%; padding:12px 12px; border-radius:14px; border:2px solid rgba(255,255,255,.1);
+    background:#111827; color:#fff; outline:none; font-size:16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .btn{
+    display:inline-block; border:none; cursor:pointer; padding:12px 18px; border-radius:16px;
+    font-weight:900; font-size:16px; color:#0f0a03;
+    background:linear-gradient(180deg,#fde68a,#fb7185);
+    box-shadow:0 8px 0 #7a2339, 0 18px 30px rgba(0,0,0,.5); transition: transform .06s;
+  }
+  .btn.ghost{ background:transparent; border:2px solid rgba(255,255,255,.25); color:#e5e7eb; box-shadow:none }
+  .btn:active{ transform: translateY(2px) }
+  .btn-group{ display:flex; gap:10px; flex-wrap:wrap }
+  .topgap{ margin-top:14px }
+
+  /* CONTROL STRIP */
+  .controlStrip{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 12px; border-radius:16px; background: rgba(17,24,39,.65);
+    border:1.5px solid rgba(255,255,255,.12); box-shadow:0 8px 26px rgba(0,0,0,.6); margin-bottom:10px;
+    backdrop-filter: blur(6px);
+  }
+  /* โจทย์เด่นขึ้นแบบเรืองแสง + ใหญ่ขึ้น */
+  .orderText{
+    font-size: clamp(22px, 3vw, 30px); font-weight:900; letter-spacing:.2px;
+    color:#ffffff;
+    text-shadow:
+      0 0 0.5px rgba(0,0,0,.9),
+      0 2px 6px rgba(0,0,0,.9),
+      0 0 18px rgba(251,113,133,.55),    /* เงาสีชมพู */
+      0 0 40px rgba(253,224,71,.45);     /* เงาสีเหลือง */
+  }
+  .orderText b{ color:#fde047; } /* ไฮไลต์คำไทยให้เหลืองชัด */
+
+  .timerBox{ flex:1; height:10px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden; border:1px solid rgba(255,255,255,.18) }
+  .timerFill{ height:100%; width:100%; background:var(--barfg); transform-origin:left center }
+  .timerLabel{ min-width:80px; text-align:right; font-weight:900; color:#f9fafb }
+
+  /* STAGE: เทา/ดำเข้ม เพื่อดันลูกแก้วชมพูให้เด่น */
+  .stage{
+    position:relative; height:66vh; min-height:520px; border-radius:22px;
+    border:1.5px solid rgba(255,255,255,.08);
+    background:
+      radial-gradient(900px 600px at 50% -10%, rgba(255,255,255,.06), transparent),
+      radial-gradient(900px 700px at 50% 120%, rgba(255,255,255,.05), transparent),
+      #0b0f19;
+    overflow:hidden;
+  }
+  .stars{ position:absolute; inset:0; pointer-events:none; }
+  .starPix{ position:absolute; width:2px; height:2px; background:#fef3c7; border-radius:50%; animation: twinkle 2.4s infinite ease-in-out }
+  @keyframes twinkle{ 0%,100%{opacity:.18} 50%{opacity:1} }
+
+  /* HUD */
+  .hud{
+    position:absolute; top:8px; left:8px; right:8px;
+    display:flex; justify-content:space-between; align-items:center; gap:8px; pointer-events:none;
+  }
+  .pill{
+    pointer-events:auto; background:rgba(17,24,39,.7); border:1.5px solid rgba(255,255,255,.12);
+    border-radius:999px; padding:8px 12px; box-shadow:0 6px 18px rgba(0,0,0,.55);
+    font-size:14px; font-weight:800; color:#e5e7eb;
+  }
+  .chest{ display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+  .slot{
+    min-width:58px; min-height:40px; display:inline-flex; align-items:center; justify-content:center;
+    padding:6px 10px; border-radius:12px; border:2px dashed rgba(255,255,255,.25);
+    color:#f3f4f6; background:rgba(255,255,255,.06); font-weight:800;
+  }
+
+  /* TOKEN: ลูกแก้วชมพูเด่น */
+  .token{
+    position:absolute; display:inline-flex; align-items:center; justify-content:center;
+    padding: 12px 18px; min-width: 110px; min-height: 84px; border-radius: 999px;
+    font-weight:900; font-size: clamp(18px, 2.4vw, 26px); color:#2b0f1b;
+    background:
+      radial-gradient(circle at 28% 28%, rgba(255,255,255,.95), rgba(255,255,255,.6) 26%, rgba(255,255,255,0) 30%),
+      radial-gradient(circle at 72% 72%, rgba(0,0,0,.15), transparent 50%),
+      linear-gradient(145deg, var(--tokenA), var(--tokenB));
+    border:3px solid rgba(255,255,255,.85);
+    box-shadow: inset 0 12px 22px rgba(255,255,255,.28), inset 0 -10px 18px rgba(0,0,0,.25), 0 18px 36px rgba(0,0,0,.65);
+    cursor:pointer; user-select:none; transform: translate(-50%,-50%); white-space: nowrap;
+  }
+  .token:hover{ outline:4px solid rgba(255,255,255,.6) }
+
+  .feedback{
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+    font-weight:900; padding:8px 12px; border-radius:12px; border:1.5px solid rgba(255,255,255,.15);
+    background:rgba(17,24,39,.7); display:none; font-size:16px; color:#e5e7eb;
+    box-shadow:0 8px 18px rgba(0,0,0,.55);
+  }
+  .ok{ color:var(--ok) } .no{ color:var(--no) }
+
+  .pop{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.45); z-index:999; }
+  .popCard{ background:#0f172a; color:#e5e7eb; border:2px solid rgba(255,255,255,.12); border-radius:22px; padding:20px; width:min(520px,92vw); box-shadow:0 20px 40px rgba(0,0,0,.8); text-align:center; }
+  .bigLetter{ font-size:72px; font-weight:900; letter-spacing:4px; color:#fb7185; text-shadow:0 10px 30px rgba(0,0,0,.6) }
+  .progressWord{ font-size:28px; font-weight:900; color:#e5e7eb; margin-top:6px }
+  .pop .btn{ margin-top:12px }
+
+  @media (max-width: 640px){
+    .token{ min-width: 96px; min-height: 72px; font-size: 18px }
+    .slot{ min-width:48px; min-height:34px }
+    .timerLabel{ min-width:64px }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="topbrand">
+    <div class="logo"><div class="logo-badge">KP</div><div>Kru Pai Classroom</div></div>
+    <div class="badge" id="themeName">Theme: Dark + Pink Orbs</div>
+  </div>
+
+  <!-- HOME -->
+  <section id="home" class="card">
+    <h1>Verb Quest — Set 2 (Verbs 1–5)</h1>
+    <div class="subtitle">ฉากเข้มอ่านชัด 🎯 ลูกแก้วชมพูเด่น 💗 เคลียร์ชุดกริยา (20 คำ/ชุด) สะสมคำ <b>VERBS</b></div>
+    <div class="row topgap">
+      <div class="col"><label>ชื่อเล่น</label><input id="playerName" placeholder="กรอกชื่อเล่น..." /></div>
+      <div class="col"><label>จำนวนรอบต่อชุด</label><select id="roundCount"><option value="3">3 รอบ (ไว)</option><option value="4" selected>4 รอบ (มาตรฐาน)</option></select></div>
+      <div class="col"><label>ชุดคำศัพท์ (Verbs)</label><select id="datasetSel"></select></div>
+      <div class="col"><label>ความเร็วลูกโป่ง</label><select id="speedSel"><option value="slow">ช้า</option><option value="normal" selected>ปกติ</option><option value="fast">เร็ว</option></select></div>
+      <div class="col"><label>เป้าหมายสะสมตัวอักษร</label><select id="goalSel"><option value="3">VER (3 ตัว)</option><option value="4">VERB (4 ตัว)</option><option value="5" selected>VERBS (5 ตัว)</option></select></div>
+    </div>
+    <div class="topgap btn-group">
+      <button class="btn" id="startBtn">เริ่มเกม</button>
+      <button class="btn ghost" id="howBtn">กติกา</button>
+      <button class="btn ghost" id="resetLettersBtn">ล้างตัวอักษรที่สะสม</button>
+    </div>
+  </section>
+
+  <!-- HOWTO -->
+  <section id="howto" class="card" style="display:none">
+    <h1>กติกา</h1>
+    <ol>
+      <li>บนเวทีมีคำศัพท์ <b>อังกฤษ 10 คำ</b> ลอยอยู่</li>
+      <li>โจทย์ภาษาไทย (ตัวใหญ่ชัด): <b>“กำจัดคำว่า ‘____’”</b></li>
+      <li>จับเวลา <b>7 วิ/โจทย์</b> – ปรับความเร็วลูกโป่งได้</li>
+      <li>กำจัดจนเหลือ <b>คำสุดท้าย</b> ของแต่ละรอบ ทำครบ <b>3–4 รอบ</b> = เคลียร์ชุด</li>
+      <li>เคลียร์ชุดสำเร็จ ได้ <b>อักษรรางวัล</b> 1 ตัว (สะสมเป็น VERBS)</li>
+    </ol>
+    <div class="topgap"><button class="btn" id="backHome1">ย้อนกลับ</button></div>
+  </section>
+
+  <!-- GAME -->
+  <section id="game" class="card" style="display:none">
+    <div class="controlStrip">
+      <div class="orderText" id="orderText">กำจัดคำว่า "<b>—</b>"</div>
+      <div class="timerBox"><div id="timerFill" class="timerFill"></div></div>
+      <div class="timerLabel">⏱️ <span id="timerNum">7</span> วิ</div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="hud">
+        <div class="pill">ผู้เล่น: <b id="hudName">-</b></div>
+        <div class="pill">รอบ: <b id="hudRound">1</b>/<span id="hudTotal">4</span></div>
+        <div class="pill">หีบ: <span class="chest" id="chest"></span></div>
+        <div class="pill">ตัวอักษร: <b id="lettersProgress">—</b></div>
+      </div>
+      <div class="stars" id="stars"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="topgap btn-group" style="justify-content:space-between">
+      <button class="btn ghost" id="quitBtn">ออก</button>
+      <button class="btn" id="skipBtn">ข้ามคำสั่ง</button>
+    </div>
+  </section>
+
+  <!-- REWARD POPUP -->
+  <div class="pop" id="rewardPop">
+    <div class="popCard">
+      <div style="font-size:20px; font-weight:800;">เยี่ยมมาก! ได้อักษร</div>
+      <div class="bigLetter" id="rewardLetter">V</div>
+      <div class="progressWord" id="rewardProgress">สะสม: V —</div>
+      <button class="btn" id="closePopBtn">ตกลง</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===================== DATASETS (เหมือนเดิม) ===================== */
+const DATASETS = [
+  { key:"verb1", label:"Verb Set 1 — Everyday", reward:"V",
+    theme:{name:"Peachy Sunny"},
+    THAI_MAP:{
+      "go":"ไป","come":"มา","eat":"กิน","drink":"ดื่ม","run":"วิ่ง","walk":"เดิน","sit":"นั่ง","stand":"ยืน","sleep":"นอน","wake":"ตื่น",
+      "open":"เปิด","close":"ปิด","read":"อ่าน","write":"เขียน","talk":"พูด","listen":"ฟัง","look":"มอง","see":"เห็น","play":"เล่น","stop":"หยุด"
+    }
+  },
+  { key:"verb2", label:"Verb Set 2 — School & Study", reward:"E",
+    theme:{name:"Sky Candy"},
+    THAI_MAP:{
+      "learn":"เรียนรู้","study":"ศึกษา","teach":"สอน","ask":"ถาม","answer":"ตอบ","spell":"สะกด","draw":"วาด","paint":"ระบายสี","count":"นับ","erase":"ลบ",
+      "think":"คิด","help":"ช่วย","repeat":"ทวน","show":"แสดง","find":"หา","check":"ตรวจ","use":"ใช้","finish":"เสร็จ","start":"เริ่ม","practice":"ฝึก"
+    }
+  },
+  { key:"verb3", label:"Verb Set 3 — Home & Family", reward:"R",
+    theme:{name:"Cotton Pink"},
+    THAI_MAP:{
+      "cook":"ทำอาหาร","clean":"ทำความสะอาด","wash":"ล้าง","iron":"รีด","sweep":"กวาด","make":"ทำ","fix":"ซ่อม","feed":"ป้อน","call":"โทร","hug":"กอด",
+      "smile":"ยิ้ม","love":"รัก","watch":"ดู","carry":"ถือ","turn":"หมุน/เปิด","close":"ปิด","open":"เปิด","put":"วาง","take":"หยิบ/เอา","keep":"เก็บ"
+    }
+  },
+  { key:"verb4", label:"Verb Set 4 — Play & Fun", reward:"B",
+    theme:{name:"Mint Pop"},
+    THAI_MAP:{
+      "jump":"กระโดด","dance":"เต้น","sing":"ร้องเพลง","laugh":"หัวเราะ","swim":"ว่ายน้ำ","throw":"ขว้าง","catch":"จับ","kick":"เตะ","ride":"ขี่/นั่ง","clap":"ปรบมือ",
+      "move":"ขยับ","fly":"บิน","build":"สร้าง","win":"ชนะ","lose":"แพ้","wave":"โบกมือ","share":"แบ่งปัน","help":"ช่วย","play":"เล่น","draw":"วาด"
+    }
+  },
+  { key:"verb5", label:"Verb Set 5 — Travel & World", reward:"S",
+    theme:{name:"Lavender Trip"},
+    THAI_MAP:{
+      "drive":"ขับ","fly":"บิน","ride":"นั่ง/ขี่","travel":"ท่องเที่ยว","visit":"เยี่ยม/เที่ยว","walk":"เดิน","buy":"ซื้อ","sell":"ขาย","take":"เอา/พา","bring":"นำมา",
+      "pack":"เก็บกระเป๋า","carry":"ถือ/ขน","plan":"วางแผน","arrive":"มาถึง","leave":"ออกเดินทาง","enjoy":"เพลิดเพลิน","stop":"หยุด","start":"เริ่ม","wait":"รอ","return":"กลับ"
+    }
+  }
+];
+
+/* ====================== SETTINGS ====================== */
+const DISTRACTOR_COUNT = 9;
+const ORDER_LIMIT_MS   = 7000;
+const SPEED_TABLE      = { slow:0.7, normal:1.0, fast:1.45 };
+const REWARD_WORD      = "VERBS";
+const STORAGE_KEY      = "kpq_letters_v2";
+
+/* ---------------- STATE ---------------- */
+let DS = DATASETS[0];
+let WORD_POOL = [];
+let THAI_MAP = {};
+let rounds = 4, currentRound = 0;
+let targetList = [];
+let collected = [];
+let tokens = [];
+let orderQueue = [], currentOrder = "";
+let orderTimer = null, orderStart = 0;
+let speedMul = SPEED_TABLE.normal;
+let goalLetters = 5;
+
+/* ---------------- ELEMENTS ---------------- */
+const secHome = document.getElementById("home");
+const secHow = document.getElementById("howto");
+const secGame = document.getElementById("game");
+const startBtn = document.getElementById("startBtn");
+const howBtn = document.getElementById("howBtn");
+const backHome1 = document.getElementById("backHome1");
+const playerNameInput = document.getElementById("playerName");
+const roundCountSel = document.getElementById("roundCount");
+const datasetSel = document.getElementById("datasetSel");
+const speedSel = document.getElementById("speedSel");
+const goalSel = document.getElementById("goalSel");
+const themeName = document.getElementById("themeName");
+const hudName = document.getElementById("hudName");
+const hudRound = document.getElementById("hudRound");
+const hudTotal = document.getElementById("hudTotal");
+const chestEl = document.getElementById("chest");
+const stage = document.getElementById("stage");
+const starsEl = document.getElementById("stars");
+const orderText = document.getElementById("orderText");
+const timerFill = document.getElementById("timerFill");
+const timerNum = document.getElementById("timerNum");
+const feedback = document.getElementById("feedback");
+const quitBtn = document.getElementById("quitBtn");
+const skipBtn = document.getElementById("skipBtn");
+const lettersProgress = document.getElementById("lettersProgress");
+const rewardPop = document.getElementById("rewardPop");
+const rewardLetterEl = document.getElementById("rewardLetter");
+const rewardProgressEl = document.getElementById("rewardProgress");
+const closePopBtn = document.getElementById("closePopBtn");
+const resetLettersBtn = document.getElementById("resetLettersBtn");
+
+/* ---------------- UTIL ---------------- */
+const show = el=>el.style.display="";
+const hide = el=>el.style.display="none";
+const rand=(a,b)=>Math.random()*(b-a)+a;
+const shuffle=arr=>{const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a;};
+const sample=(arr,n)=>shuffle(arr).slice(0,n);
+const sampleOne=arr=>arr[Math.floor(Math.random()*arr.length)];
+function pickDistractors(excludeWords, n){
+  const pool = WORD_POOL.filter(w=>!excludeWords.includes(w));
+  return sample(pool, Math.min(n,pool.length));
+}
+
+/* ---------------- AUDIO ---------------- */
+let audioCtx=null;
+function ensureAudio(){ if(!audioCtx){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); } }
+function beep(freq=880, dur=.1, type="triangle", vol=.22){
+  try{ ensureAudio(); const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+    osc.type=type; osc.frequency.value=freq; g.gain.value=vol; osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(); setTimeout(()=>osc.stop(), dur*1000);
+  }catch(e){}
+}
+function okSFX(){ beep(900,.08,"triangle",.25); setTimeout(()=>beep(1200,.08,"triangle",.22),110); }
+function noSFX(){ beep(240,.12,"sawtooth",.22); }
+
+/* ---------------- PARTICLES ---------------- */
+function sparkleAt(x,y,count=12){
+  for(let i=0;i<count;i++){
+    const s=document.createElement("div");
+    s.style.position="fixed"; s.style.width="10px"; s.style.height="10px";
+    s.style.left=(x + (Math.random()*80-40))+"px";
+    s.style.top=(y + (Math.random()*40-20))+"px";
+    s.style.background="radial-gradient(circle at 35% 35%, #fff9d5, #fde047 60%, #d2a000)";
+    s.style.clipPath="polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)";
+    s.style.filter="drop-shadow(0 3px 4px rgba(0,0,0,.6))";
+    s.style.pointerEvents="none"; s.style.zIndex=999;
+    s.animate([{transform:"translateY(-6px)",opacity:1},{transform:"translateY(36px) scale(.7)",opacity:0}],{duration:650,easing:"ease-out",fill:"forwards"});
+    document.body.appendChild(s); setTimeout(()=>s.remove(), 680);
+  }
+}
+function confettiBurst(){
+  const w=window.innerWidth;
+  for(let i=0;i<160;i++){
+    const b=document.createElement("div");
+    b.style.position="fixed"; b.style.width="8px"; b.style.height="14px"; b.style.borderRadius="3px";
+    b.style.left=(Math.random()*w)+"px"; b.style.top=(-20 - Math.random()*80)+"px";
+    b.style.background=`hsl(${Math.random()*360},85%,65%)`; b.style.transform=`rotate(${Math.random()*360}deg)`;
+    b.style.zIndex=1000; b.style.pointerEvents="none";
+    const dur=1200+Math.random()*900;
+    b.animate([{transform:b.style.transform,opacity:1},{transform:`translateY(70vh) rotate(${Math.random()*720}deg)`,opacity:1}],{duration:dur,easing:"ease-in"});
+    document.body.appendChild(b); setTimeout(()=>b.remove(), dur+60);
+  }
+}
+
+/* ---------------- STARFIELD ---------------- */
+function buildStars(){
+  starsEl.innerHTML="";
+  for(let i=0;i<160;i++){
+    const s=document.createElement("div"); s.className="starPix";
+    s.style.left = Math.random()*100+"%";
+    s.style.top = Math.random()*100+"%";
+    s.style.opacity = Math.random()*0.8+0.2;
+    s.style.animationDelay = (Math.random()*2)+"s";
+    starsEl.appendChild(s);
+  }
+}
+
+/* ---------------- THEME (คงธีมชื่อไว้ แต่บังคับลูกแก้วชมพู) ---------------- */
+function applyTheme(t){
+  // ชื่อธีมโชว์เฉย ๆ ลูกแก้วชมพูบังคับโดยตัวแปร root แล้ว
+  themeName.textContent = `Theme: Dark + Pink Orbs — ${t.name || ""}`;
+}
+
+/* ---------------- SPEED ---------------- */
+function applySpeed(key){ speedMul = SPEED_TABLE[key] || 1.0; }
+
+/* ---------------- LETTER STORAGE ---------------- */
+function getLetters(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch(e){ return []; } }
+function setLetters(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); updateLettersHUD(); }
+function addLetterOnce(letter){ const arr=getLetters(); if(!arr.includes(letter)){ arr.push(letter); setLetters(arr); } return arr; }
+function resetLetters(){ localStorage.removeItem(STORAGE_KEY); updateLettersHUD(); }
+function updateLettersHUD(){
+  const arr=getLetters();
+  const goal = parseInt(goalSel.value,10);
+  const word = REWARD_WORD.slice(0, goal);
+  const have = arr.filter(ch=>word.includes(ch)).sort((a,b)=>word.indexOf(a)-word.indexOf(b));
+  lettersProgress.textContent = `${have.join("") || "—"} / ${word}`;
+}
+
+/* ---------------- MOTION ---------------- */
+let rafId = null;
+function startMotion(){
+  cancelMotion();
+  function tick(){
+    const w = stage.clientWidth, h = stage.clientHeight;
+    tokens.forEach(t=>{
+      const rect = t.el.getBoundingClientRect();
+      const rW = rect.width/2, rH = rect.height/2;
+      t.x += t.vx * speedMul; t.y += t.vy * speedMul;
+      if(t.x < rW){ t.x = rW; t.vx *= -1; }
+      if(t.x > w - rW){ t.x = w - rW; t.vx *= -1; }
+      if(t.y < rH){ t.y = rH; t.vy *= -1; }
+      if(t.y > h - rH){ t.y = h - rH; t.vy *= -1; }
+      t.el.style.left = t.x + "px";
+      t.el.style.top = t.y + "px";
+    });
+    rafId = requestAnimationFrame(tick);
+  }
+  rafId = requestAnimationFrame(tick);
+}
+function cancelMotion(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; }}
+
+/* ---------------- ORDER TIMER ---------------- */
+function startOrderTimer(){
+  stopOrderTimer();
+  orderStart = Date.now();
+  timerFill.style.transform = "scaleX(1)";
+  timerNum.textContent = "7";
+  orderTimer = setInterval(()=>{
+    const elapsed = Date.now() - orderStart;
+    const left = Math.max(0, 1 - elapsed/ORDER_LIMIT_MS);
+    timerFill.style.transform = `scaleX(${left})`;
+    const secLeft = Math.ceil((ORDER_LIMIT_MS - elapsed)/1000);
+    timerNum.textContent = Math.max(0, secLeft);
+    if(elapsed >= ORDER_LIMIT_MS){
+      noSFX();
+      const target = targetList[currentRound-1];
+      const remaining = tokens.map(t=>t.word).filter(w=>w!==target);
+      if(remaining.length){ setOrder( sampleOne(remaining) ); } else { stopOrderTimer(); }
+    }
+  }, 50);
+}
+function stopOrderTimer(){ if(orderTimer){ clearInterval(orderTimer); orderTimer=null; }}
+
+/* ---------------- GAME FLOW ---------------- */
+function prepareTargetList(){ const keys = Object.keys(THAI_MAP); targetList = sample(keys, rounds); }
+function applyDataset(ds){ DS = ds; THAI_MAP = {...ds.THAI_MAP}; WORD_POOL = Object.keys(THAI_MAP); applyTheme(ds.theme||{}); }
+function populateDatasetSelect(){
+  datasetSel.innerHTML = "";
+  DATASETS.forEach((d)=>{
+    const op=document.createElement("option");
+    op.value = d.key; op.textContent = `${d.label}`;
+    datasetSel.appendChild(op);
+  });
+}
+function findDataset(key){ return DATASETS.find(d=>d.key===key) || DATASETS[0]; }
+
+startBtn.addEventListener("click", ()=>{
+  const name = playerNameInput.value.trim() || "-";
+  rounds = parseInt(roundCountSel.value,10);
+  const dsKey = datasetSel.value;
+  const sp = speedSel.value;
+  goalLetters = parseInt(goalSel.value,10);
+
+  applySpeed(sp);
+  applyDataset(findDataset(dsKey));
+  updateLettersHUD();
+
+  prepareTargetList();
+  collected = []; currentRound = 0;
+  hudName.textContent = name; hudTotal.textContent = rounds; chestEl.innerHTML="";
+  buildStars();
+  hide(secHome); hide(secHow); show(secGame);
+  nextRound();
+});
+
+howBtn.addEventListener("click", ()=>{ hide(secHome); show(secHow); });
+backHome1.addEventListener("click", ()=>{ hide(secHow); show(secHome); });
+quitBtn.addEventListener("click", ()=>{ hide(secGame); show(secHome); cancelMotion(); stopOrderTimer(); });
+resetLettersBtn.addEventListener("click", ()=>{ resetLetters(); alert("ล้างตัวอักษรที่สะสมแล้ว"); });
+goalSel.addEventListener("change", updateLettersHUD);
+
+skipBtn.addEventListener("click", ()=>{
+  const target = targetList[currentRound-1];
+  const remaining = tokens.map(t=>t.word).filter(w=>w!==target);
+  if(remaining.length){ setOrder( sampleOne(remaining) ); }
+});
+
+function nextRound(){
+  tokens.forEach(t=>t.el.remove()); tokens=[]; feedback.style.display="none"; stopOrderTimer();
+
+  const targetWord = targetList[currentRound];
+  const exclude = [targetWord];
+  const words = [targetWord, ...pickDistractors(exclude, DISTRACTOR_COUNT)];
+  orderQueue = shuffle(words.filter(w=>w!==targetWord));
+
+  const w = stage.clientWidth, h = stage.clientHeight;
+  words.forEach((wrd)=>{
+    const el = document.createElement("div"); el.className = "token"; el.textContent = wrd;
+    const x = rand(120, w-120), y = rand(120, h-120);
+    const vx = (Math.random()<.5?-1:1)*rand(.35,.75);
+    const vy = (Math.random()<.5?-1:1)*rand(.35,.75);
+    el.style.left = x + "px"; el.style.top = y + "px";
+    el.addEventListener("click", ()=> onTokenClick(wrd, el));
+    stage.appendChild(el);
+    tokens.push({word:wrd, el, x, y, vx, vy});
+  });
+
+  currentRound++; hudRound.textContent = currentRound;
+  startMotion();
+  if(orderQueue.length){ setOrder(orderQueue[0]); }
+}
+
+function setOrder(englishWord){
+  currentOrder = englishWord;
+  const thai = THAI_MAP[englishWord] || englishWord;
+  orderText.innerHTML = `กำจัดคำว่า "<b>${thai}</b>"`;
+  startOrderTimer();
+}
+
+function onTokenClick(word, el){
+  const targetWord = targetList[currentRound-1];
+  if(word === targetWord){ showFeedback("อย่าเพิ่งกำจัดคำนี้! รักษาไว้ ⭐", false); noSFX(); return; }
+  if(word !== currentOrder){ showFeedback("ยังไม่ใช่คำนั้น ลองกำจัดตามคำสั่ง", false); noSFX(); return; }
+  const rect = el.getBoundingClientRect();
+  sparkleAt(rect.left+rect.width/2, rect.top+rect.height/2, 16);
+  el.remove(); okSFX();
+  tokens = tokens.filter(t=>t.word!==word);
+  orderQueue = orderQueue.filter(w=>w!==word);
+  if(orderQueue.length){ setOrder(orderQueue[0]); } else { captureTarget(targetWord); }
+}
+
+function captureTarget(targetWord){
+  stopOrderTimer();
+  orderText.innerHTML = `เหลือคำสุดท้าย "<b>${THAI_MAP[targetWord] || targetWord}</b>"! เก็บเข้าหีบ ✨`;
+  showFeedback("ดีมาก! เก็บคำลับเข้าหีบแล้ว", true);
+  collected.push(targetWord);
+  const slot = document.createElement("div"); slot.className = "slot"; slot.textContent = targetWord; chestEl.appendChild(slot);
+  cancelMotion();
+  if(currentRound < rounds){ setTimeout(()=> nextRound(), 850); }
+  else { setTimeout(()=> finishSet(), 650); }
+}
+
+function showFeedback(text, ok){
+  feedback.textContent = text;
+  feedback.className = "feedback " + (ok? "ok":"no");
+  feedback.style.display = "block";
+  setTimeout(()=> feedback.style.display = "none", 900);
+}
+
+/* ---------------- FINISH & REWARD ---------------- */
+function finishSet(){
+  const letter = DS.reward;
+  const arr = addLetterOnce(letter);
+  rewardLetterEl.textContent = letter;
+  const goalWord = REWARD_WORD.slice(0, parseInt(goalSel.value,10));
+  const have = arr.filter(ch=>goalWord.includes(ch)).sort((a,b)=>goalWord.indexOf(a)-goalWord.indexOf(b));
+  rewardProgressEl.textContent = `สะสม: ${have.join("") || "—"} / ${goalWord}`;
+  rewardPop.style.display = "flex";
+  confettiBurst();
+  okSFX(); setTimeout(()=>okSFX(),120);
+}
+
+closePopBtn.addEventListener("click", ()=>{
+  rewardPop.style.display = "none";
+  const arr = getLetters();
+  const goalWord = REWARD_WORD.slice(0, parseInt(goalSel.value,10));
+  const done = goalWord.split("").every(ch=>arr.includes(ch));
+  if(done){
+    setTimeout(()=>{
+      rewardPop.style.display = "flex";
+      rewardLetterEl.textContent = "🎉";
+      rewardProgressEl.innerHTML = `<b>สุดยอด!</b> สะสมครบคำ <b>${goalWord}</b> แล้ว`;
+      confettiBurst();
+    }, 200);
+  }else{
+    hide(secGame); show(secHome);
+  }
+});
+
+/* ---------------- INIT ---------------- */
+function init(){
+  populateDatasetSelect();
+  applyDataset(DATASETS[0]);
+  applySpeed('normal');
+  updateLettersHUD();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
